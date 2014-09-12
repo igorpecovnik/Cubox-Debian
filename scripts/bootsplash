@@ -11,4 +11,4 @@
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 
-echo "Booting Debian for Cubox ..." >> /dev/tty0
+echo "Booting Debian for Cubox (SD-CARD)..." >> /dev/tty0

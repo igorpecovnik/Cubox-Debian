@@ -47,6 +47,13 @@ echo "Downloading necessary files."
 apt-get -qq -y install bc lzop zip binfmt-support bison build-essential ccache debootstrap flex gawk gcc-arm-linux-gnueabi gcc-arm-linux-gnueabihf lvm2 qemu-user-static u-boot-tools uuid-dev zlib1g-dev unzip libncurses5-dev pkg-config libusb-1.0-0-dev parted
 
 #--------------------------------------------------------------------------------
+# Grabbing cuboxi-config
+#--------------------------------------------------------------------------------
+git clone https://github.com/kicker22004/cuboxi-config.git $SRC/cuboxi-config
+mv $SRC/cuboxi-config/* $SRC/scripts/
+rm -rf $SRC/cuboxi-config
+
+#--------------------------------------------------------------------------------
 # Preparing output / destination files
 #--------------------------------------------------------------------------------
 
@@ -276,6 +283,17 @@ chroot $DEST/output/sdcard /bin/bash -c "chmod +x /etc/init.d/bootsplash"
 # and startable on boot
 chroot $DEST/output/sdcard /bin/bash -c "update-rc.d bootsplash defaults" 
 
+# script to Configure Cuboxi
+cp $SRC/scripts/cuboxi-config $DEST/output/sdcard/usr/bin/cuboxi-config
+# make it executable
+chroot $DEST/output/sdcard /bin/bash -c "chmod +x /usr/bin/cuboxi-config"
+
+# Config Check
+cp $SRC/scripts/cuboxi-config.sh $DEST/output/sdcard/etc/profile.d/cuboxi-config.sh
+cp $SRC/scripts/ssh-first $DEST/output/sdcard/etc/init.d/ssh-first
+# make executable
+chroot $DEST/output/sdcard /bin/bash -c "chmod +x /etc/profile.d/cuboxi-config.sh"
+
 # scripts for autoresize at first boot from cubian
 cd $DEST/output/sdcard/etc/init.d
 cp $SRC/scripts/cubian-resize2fs $DEST/output/sdcard/etc/init.d
@@ -299,8 +317,11 @@ cat $SRC/scripts/bashrc >> $DEST/output/sdcard/etc/bash.bashrc
 
 # make it executable
 chroot $DEST/output/sdcard /bin/bash -c "chmod +x /etc/init.d/cubian-*"
+chroot $DEST/output/sdcard /bin/bash -c "chmod +x /etc/init.d/ssh-first"
+
 # and startable on boot
-chroot $DEST/output/sdcard /bin/bash -c "update-rc.d cubian-firstrun defaults" 
+chroot $DEST/output/sdcard /bin/bash -c "update-rc.d ssh-first defaults" 
+
 echo "Installing aditional applications"
 chroot $DEST/output/sdcard /bin/bash -c "apt-get -qq -y install i2c-tools bluetooth libbluetooth3 libbluetooth-dev stress u-boot-tools makedev libfuse2 libc6 libnl-3-dev sysfsutils hddtemp bc figlet toilet screen hdparm libfuse2 ntfs-3g bash-completion lsof sudo git hostapd dosfstools htop openssh-server ca-certificates module-init-tools dhcp3-client udev ifupdown iproute iputils-ping ntp rsync usbutils pciutils wireless-tools wpasupplicant procps parted cpufrequtils unzip bridge-utils"
 # removed in 2.4 #chroot $DEST/output/sdcard /bin/bash -c "apt-get -qq -y install lirc alsa-utils console-setup console-data"
@@ -342,7 +363,7 @@ sed -e 's/ondemand/interactive/g' -i $DEST/output/sdcard/etc/init.d/cpufrequtils
 # set root password
 chroot $DEST/output/sdcard /bin/bash -c "(echo $ROOTPWD;echo $ROOTPWD;) | passwd root" 
 # force password change upon first login 
-chroot $DEST/output/sdcard /bin/bash -c "chage -d 0 root" 
+#chroot $DEST/output/sdcard /bin/bash -c "chage -d 0 root" 
 
 if [ "$RELEASE" = "jessie" ]; then
 # enable root login for latest ssh on jessie
